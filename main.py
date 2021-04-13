@@ -86,58 +86,63 @@ class Gamble:
                 else:
                     loosers.append(user_display_name)
 
-        total_value = len(loosers) * self.bid_value
-        value_per_winner = float(total_value) / len(winners)
-        remaining_debt = {w: value_per_winner for w in winners}
-        transactions = {l: [] for l in loosers}
+        if len(winners)>0:
+            total_value = len(loosers) * self.bid_value
+            value_per_winner = float(total_value) / len(winners)
+            remaining_debt = {w: value_per_winner for w in winners}
+            transactions = {l: [] for l in loosers}
 
-        embedVar = None
-        if len(loosers) > 0:
-            if self.bid_value > 0:
-                while loosers:
-                    l = loosers[0]
-                    v = self.bid_value
+            embedVar = None
+            if len(loosers) > 0:
+                if self.bid_value > 0:
+                    while loosers:
+                        l = loosers[0]
+                        v = self.bid_value
 
-                    for w in list(remaining_debt.keys()):
-                        if v < remaining_debt[w]:
-                            transactions[l].append((w, v))
-                            remaining_debt[w] -= v
-                            v = 0
-                            break
-                        elif v == remaining_debt[w]:
-                            transactions[l].append((w, remaining_debt[w]))
-                            remaining_debt[w] = 0
-                            v -= remaining_debt[w]
-                            remaining_debt.pop(w)
-                            break
-                        elif v > remaining_debt[w]:
-                            transactions[l].append((w, remaining_debt[w]))
-                            remaining_debt[w] = 0
-                            v -= remaining_debt[w]
-                            remaining_debt.pop(w)
+                        for w in list(remaining_debt.keys()):
+                            if v < remaining_debt[w]:
+                                transactions[l].append((w, v))
+                                remaining_debt[w] -= v
+                                v = 0
+                                break
+                            elif v == remaining_debt[w]:
+                                transactions[l].append((w, remaining_debt[w]))
+                                remaining_debt[w] = 0
+                                v -= remaining_debt[w]
+                                remaining_debt.pop(w)
+                                break
+                            elif v > remaining_debt[w]:
+                                transactions[l].append((w, remaining_debt[w]))
+                                remaining_debt[w] = 0
+                                v -= remaining_debt[w]
+                                remaining_debt.pop(w)
 
-                    loosers = loosers[1:]
+                        loosers = loosers[1:]
 
-                embedVar = discord.Embed(title="[DEBT] " + self.title,
-                                         description="You played, you loosed, you pay.\nEach winner win %s po" % str(value_per_winner),
-                                         color=0xff0000)
-                descr = []
-                for l in transactions.keys():
-                    text = l + " : "
-                    temp_text = []
-                    for (w, v) in transactions[l]:
-                         temp_text.append("%s po  %s" % (str(v), w))
-                    text += ", ".join(temp_text)
-                    descr.append(text)
-                embedVar.add_field(name="List of transactions",
-                                   value="\n".join(descr), inline=False)
+                    embedVar = discord.Embed(title="[DEBT] " + self.title,
+                                             description="You played, you loosed, you pay.\nEach winner win %s po" % str(value_per_winner),
+                                             color=0xff0000)
+                    descr = []
+                    for l in transactions.keys():
+                        text = l + " : "
+                        temp_text = []
+                        for (w, v) in transactions[l]:
+                             temp_text.append("%s po  %s" % (str(v), w))
+                        text += ", ".join(temp_text)
+                        descr.append(text)
+                    embedVar.add_field(name="List of transactions",
+                                       value="\n".join(descr), inline=False)
+                else:
+                    embedVar = discord.Embed(title="[DEBT] " + self.title,
+                                             description="No bid value set, no debt.",
+                                             color=0x00ff00)
             else:
                 embedVar = discord.Embed(title="[DEBT] " + self.title,
-                                         description="No bid value set, no debt.",
+                                         description="No loosers, GG all!",
                                          color=0x00ff00)
         else:
             embedVar = discord.Embed(title="[DEBT] " + self.title,
-                                     description="No loosers, GG all!",
+                                     description="No Winners...",
                                      color=0x00ff00)
 
         return embedVar
